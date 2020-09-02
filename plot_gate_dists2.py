@@ -25,9 +25,14 @@ def plot_gate_dist(name, col, color_map):
     sns.kdeplot(ic,ec, shade=True, shade_lowest=False, alpha=0.5,legend=True, cbar=False, ax=ax, cmap=color_map)
    # b= ax.scatter(ic,ec, color=col, label=name, alpha = 1)   #needs to be after so that the spots come on top
 
+start_EC = []
+start_IC = []
+
 for sim in all_sims:
     plot_gate_dist(sim[0], sim[2], sim[3])
-   
+    start_EC.append(np.loadtxt('../gate_dists/extracellular/%s.EC.starting_str.xvg' % sim[0])[1])
+    start_IC.append(np.loadtxt('../gate_dists/intracellular/%s.IC.starting_str.xvg' % sim[0])[1])
+    
 plt.ylabel('Extracellular gate distance (nm)')
 plt.xlabel('Intracellular gate distance (nm)')
 
@@ -35,9 +40,13 @@ plt.xlabel('Intracellular gate distance (nm)')
 colors = ["green", "grey", "red", "orange", "blue"]
 texts = ["Out Open", "Out occ.", "Occ.", "In Occ.", "In Open"]
 
+plt.scatter(start_IC, start_EC, color = colors)
+
 patches = [ plt.plot([],[], marker="o", ms=10, ls="", mec=None, color=colors[i], alpha = 0.5, 
             label="{:s}".format(texts[i]) )[0]  for i in range(len(texts)) ]   #seaborn legends are weird... 
 plt.legend(handles=patches)
+
+
 
 plt.savefig('gate_distances_KDE.png', dpi =500)
 plt.clf()
@@ -52,15 +61,19 @@ for n, sim in enumerate(all_sims):
     ec = np.loadtxt('../gate_dists/extracellular/%s.EC.xvg' %name)[:,1]
     ic = np.loadtxt('../gate_dists/intracellular/%s.IC.xvg' %name)[:,1]
     times = np.loadtxt('../gate_dists/intracellular/%s.IC.xvg' %name)[:,0] / 1000
-    axs[n].scatter(ic, ec, c=times, cmap = sim[3])
+    t = axs[n].scatter(ic, ec, c=times, cmap = sim[3], alpha = 0.5)
     axs[n].set_xlim(plotxlim)
     axs[n].set_ylim(plotylim)
+    
+    axs[n].set_title(sim[0])
+    fig.colorbar(t, ax = axs[n])
     
 axs[2].set_ylabel('Extracellular gate (nm)')
 #plt.ylabel('Extracellular gate (nm)')
 plt.xlabel("intracellular gate (nm)")
 fig.set_figheight(15)
-plt.savefig('gate_distance_time.png', dpi = 500)
+plt.tight_layout()
+plt.savefig('gate_distance_time.png', dpi = 1000)
 
 
 
